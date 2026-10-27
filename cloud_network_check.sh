@@ -1,33 +1,17 @@
-#!/usr/bin/env bash
-set -u
-
-echo "Cloud Network Checks"
-echo "--------------------"
-
-echo
-echo "DNS lookup:"
-if command -v getent >/dev/null 2>&1; then
-    getent hosts example.com || echo "DNS lookup failed."
-else
-    echo "getent command is unavailable."
-fi
-
-echo
-echo "Routing information:"
-ip route || true
-
-echo
-echo "Network interfaces:"
-ip -brief address || true
-
-echo
-echo "Listening TCP and UDP ports:"
-if command -v ss >/dev/null 2>&1; then
-    ss -tuln
-else
-    echo "ss command is unavailable."
-fi
-
-echo
-echo "Cloud network checks completed."
-
+#!/usr/bin/env bash 
+echo "DNS resolution:" 
+if getent ahosts example.com | head -n 3; then :; else echo "Resolution unavailable"; fi 
+echo 
+echo "Default route:" 
+ip route show default 2>/dev/null || echo "ip route not available" 
+echo 
+echo "Firewall tooling status (no rules changed):" 
+if command -v ufw >/dev/null 2>&1; then 
+  ufw status 2>&1 | head -n 8 
+elif command -v firewall-cmd >/dev/null 2>&1; then 
+  firewall-cmd --state 2>&1 
+else 
+  echo "ufw/firewalld not found" 
+fi 
+echo 
+echo "Cloud metadata is intentionally not queried; use your provider's approved console or CLI." 
